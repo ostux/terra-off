@@ -1,12 +1,33 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import { createI18n } from 'vue-i18n';
 
-import App from './App.vue'
-import router from './router'
+import App from './App.vue';
+import router from './router';
 
-const app = createApp(App)
+import '@/main.css';
+import '@/assets/scss/index.scss';
 
-app.use(createPinia())
-app.use(router)
+import enGB from '@/assets/lang/en-GB.json';
+import huHU from '@/assets/lang/hu-HU.json';
 
-app.mount('#app')
+// Type-define 'en-US' as the master schema for the resource
+type MessageSchema = typeof enGB;
+
+const i18n = createI18n<[MessageSchema], 'en-GB' | 'hu-HU'>({
+  legacy: true,
+  locale: 'en-GB',
+  fallbackLocale: 'en-GB',
+  messages: {
+    'en-GB': enGB,
+    'hu-HU': huHU,
+  },
+});
+
+const app = createApp(App);
+
+app.use(createPinia());
+app.use(i18n);
+app.use(router);
+
+app.mount('#app');
