@@ -27,6 +27,12 @@ Vue 3 application using the latest release candidate with Vite, TypeScript, Pini
 - **No untranslated text in components**: HTML components CANNOT contain hardcoded/untranslated text
 - **Use vue-i18n pluralization**: Pluralization MUST use vue-i18n's built-in pluralization feature, NOT multiple separate keys
 
+### Planning & Task Management
+- **Plan files location**: When creating a plan, the plan file MUST be saved in the `TODO/` folder as a markdown file
+- **Plan must contain TODO list**: Every plan file MUST contain a TODO list with checkboxes
+- **Update plan during execution**: When executing a plan, the markdown file TODO list MUST be updated to track progress
+- **Enable continuation**: Plan files allow continuing work from where it was left off in subsequent sessions
+
 ## Development Commands
 
 ```bash
