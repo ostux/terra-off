@@ -21,6 +21,7 @@ Vue 3 application using the latest release candidate with Vite, TypeScript, Pini
 
 ### Localization
 - **vue-i18n for translations**: The application uses vue-i18n for internationalization
+- **Use Composition API**: Always use `useI18n()` composable in components, NOT the legacy `$t` global property
 - **Only maintain English in development**: Only update `src/assets/lang/en-GB.json` during development
 - **Other languages synced on request**: Language files other than en-GB are synchronized separately on request
 - **No untranslated text in components**: HTML components CANNOT contain hardcoded/untranslated text
@@ -73,11 +74,23 @@ bun run format
 - Router configuration in `src/router/index.ts`
 
 ### Internationalization
-- vue-i18n v11 with legacy mode enabled for global `$t` property
-- Translation files in `src/assets/lang/`
-- Type declarations in `env.d.ts` for TypeScript support
-- Use `$t('key')` in templates for translations
-- Use vue-i18n pluralization syntax (e.g., `$t('items', count)`) instead of multiple keys
+- vue-i18n v11 with Composition API (legacy mode disabled)
+- Translation files in `src/assets/lang/` with en-GB as the master schema
+- Type declarations in `env.d.ts` extend from en-GB.json for full type safety
+- **Usage pattern:**
+  ```vue
+  <script setup lang="ts">
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
+  </script>
+
+  <template>
+    <p>{{ t('message.hello') }}</p>
+  </template>
+  ```
+- Use vue-i18n pluralization syntax (e.g., `t('items', count)`) instead of multiple keys
+- Other composable properties available: `d` (dates), `n` (numbers), `locale` (reactive locale)
 
 ### Styling
 - Tailwind CSS v4 with Vite plugin (`@tailwindcss/vite`)

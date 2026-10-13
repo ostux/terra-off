@@ -15,7 +15,7 @@ import huHU from '@/assets/lang/hu-HU.json';
 type MessageSchema = typeof enGB;
 
 const i18n = createI18n<[MessageSchema], 'en-GB' | 'hu-HU'>({
-  legacy: true,
+  legacy: false,
   locale: 'en-GB',
   fallbackLocale: 'en-GB',
   messages: {
