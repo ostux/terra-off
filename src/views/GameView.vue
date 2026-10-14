@@ -8,6 +8,7 @@ import { useResourcesStore } from '@/stores/game/resources';
 import { useMapStore } from '@/stores/game/map';
 import { useExplorationStore } from '@/stores/game/exploration';
 import { usePeasantsStore } from '@/stores/game/peasants';
+import { useBuildingsStore } from '@/stores/game/buildings';
 import { useNotification } from '@/composables/useNotification';
 import ResourceDisplay from '@/components/game/resources/ResourceDisplay.vue';
 import TurnIndicator from '@/components/game/turn/TurnIndicator.vue';
@@ -28,6 +29,7 @@ const resourceStore = useResourcesStore();
 const mapStore = useMapStore();
 const explorationStore = useExplorationStore();
 const peasantsStore = usePeasantsStore();
+const buildingsStore = useBuildingsStore();
 const { confirm, error } = useNotification();
 
 const showWelcome = ref(true);
@@ -66,6 +68,12 @@ onMounted(async () => {
     try {
       await gameStore.loadGame(gameStore.currentGameId);
       console.log('✅ Game loaded from storage');
+
+      // Recalculate vision for the current player after loading
+      if (turnStore.currentPlayerId) {
+        console.log('🔍 Recalculating vision after game load...');
+        explorationStore.recalculateVisionNow(turnStore.currentPlayerId);
+      }
     } catch (err) {
       console.error('❌ Failed to load game:', err);
       error('Failed to load game');
@@ -87,6 +95,9 @@ onMounted(async () => {
     initializeNewGame();
   }
 
+  // Add keyboard listener for ESC key to deselect building
+  window.addEventListener('keydown', handleKeyPress);
+
   gameLoaded.value = true;
   showWelcome.value = turnStore.turnNumber === 1; // Show welcome only for brand new games
 });
@@ -95,6 +106,9 @@ onBeforeUnmount(() => {
   // Stop playtime tracking and auto-save when leaving game view
   gameStore.stopPlaytimeTracking();
   gameStore.saveGame();
+
+  // Remove keyboard listener
+  window.removeEventListener('keydown', handleKeyPress);
 });
 
 function initializeNewGame() {
@@ -113,17 +127,20 @@ function initializeNewGame() {
   // Initialize map
   mapStore.initializeMap('default-seed');
 
-  // FOR TESTING: Give player starting peasants
+  // FOR TESTING: Give player starting peasants and resources
   peasantsStore.addPeasantSource(playerId, 'starter-house', 'house', { x: 0, y: 0 }, 20);
 
-  // Grant initial vision around spawn point (0, 0)
-  const visionRadius = 5;
-  for (let y = -visionRadius; y <= visionRadius; y++) {
-    for (let x = -visionRadius; x <= visionRadius; x++) {
+  // Grant initial vision manually (temporary until player builds first building)
+  // This will be replaced by vision from actual buildings once placed
+  const initialVisionRadius = 5;
+  for (let y = -initialVisionRadius; y <= initialVisionRadius; y++) {
+    for (let x = -initialVisionRadius; x <= initialVisionRadius; x++) {
       const distance = Math.sqrt(x * x + y * y);
-      if (distance <= visionRadius) {
+      if (distance <= initialVisionRadius) {
         const tileKey = toTileKey(x, y);
         explorationStore.getFogManager().setFogState(playerId, tileKey, FogState.VISIBLE, 1);
+        // Also ensure the tile exists
+        mapStore.ensureTilesExist([tileKey]);
       }
     }
   }
@@ -141,8 +158,8 @@ function handleBuildingSelected(building: BuildingDefinition | null) {
 }
 
 function handleBuildingPlaced() {
-  // Clear selection after placement
-  selectedBuilding.value = null;
+  // Keep selection active for continuous placement
+  // User can press ESC or select a different building to deselect
 }
 
 function handleBuildingClick(coordinates: Coordinates) {
@@ -151,6 +168,15 @@ function handleBuildingClick(coordinates: Coordinates) {
 
 function closeBuildingDetails() {
   selectedBuildingCoords.value = null;
+}
+
+function handleKeyPress(event: KeyboardEvent) {
+  // ESC key deselects building
+  if (event.key === 'Escape') {
+    if (selectedBuilding.value) {
+      selectedBuilding.value = null;
+    }
+  }
 }
 
 function handlePanTo(coordinates: Coordinates) {
@@ -271,6 +297,7 @@ function handleMainMenu() {
       <!-- Sidebar -->
       <GameSidebar
         ref="sidebarRef"
+        :selected-building="selectedBuilding"
         @building-selected="handleBuildingSelected"
         @building-click="handleBuildingClick"
         @pan-to="handlePanTo"

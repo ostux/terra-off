@@ -39,10 +39,12 @@ const BUILDING_ICONS: Record<string, string> = {
   stable: '🐴',
   training_ground: '🎯',
 
-  // Walls handled by WallOverlay
-  wooden_wall: '🧱',
+  // Walls
+  wood_wall: '🪵',
   stone_wall: '🧱',
-  wooden_gate: '🚪',
+
+  // Gates
+  wood_gate: '🚪',
   stone_gate: '🚪',
 };
 

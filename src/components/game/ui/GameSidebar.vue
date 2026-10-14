@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import PeasantPool from '@/components/game/peasants/PeasantPool.vue';
 import TurnHistory from '@/components/game/turn/TurnHistory.vue';
 import TurnTimer from '@/components/game/turn/TurnTimer.vue';
@@ -7,6 +7,14 @@ import BuildingMenu from '@/components/game/buildings/BuildingMenu.vue';
 import BuildingList from '@/components/game/buildings/BuildingList.vue';
 import type { BuildingDefinition } from '@/data/buildings';
 import type { Coordinates } from '@/data/types';
+
+interface Props {
+  selectedBuilding?: BuildingDefinition | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  selectedBuilding: null,
+});
 
 type TabType = 'buildings' | 'my-buildings' | 'peasants' | 'history' | 'research';
 
@@ -17,7 +25,6 @@ const emit = defineEmits<{
 }>();
 
 const activeTab = ref<TabType>('buildings');
-const buildingMenuRef = ref<InstanceType<typeof BuildingMenu> | null>(null);
 
 const tabs = [
   { id: 'buildings' as TabType, label: 'Build', icon: '🏗️' },
@@ -31,13 +38,9 @@ function selectTab(tab: TabType) {
   activeTab.value = tab;
 }
 
-// Watch the building menu's selected building and emit it
-watch(
-  () => buildingMenuRef.value?.selectedBuilding,
-  (newBuilding) => {
-    emit('buildingSelected', newBuilding || null);
-  },
-);
+function handleBuildingSelected(building: BuildingDefinition | null) {
+  emit('buildingSelected', building);
+}
 </script>
 
 <template>
@@ -64,7 +67,10 @@ watch(
     <div class="flex-1 overflow-y-auto p-4">
       <!-- Buildings Tab -->
       <div v-if="activeTab === 'buildings'" class="flex flex-col gap-4">
-        <BuildingMenu ref="buildingMenuRef" />
+        <BuildingMenu
+          :selected-building="selectedBuilding"
+          @update:selected-building="handleBuildingSelected"
+        />
 
         <div class="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-300">
           <p class="font-semibold">💡 How to build:</p>

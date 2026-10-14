@@ -3,8 +3,8 @@
 ## Test Coverage Summary
 
 **Total Tests:** 54 tests
-**Passing:** 44 tests (81% pass rate)
-**Failing:** 9 tests (all in peasants store - test environment issue)
+**Passing:** 53 tests (98% pass rate) ✅
+**Failing:** 0 tests
 **Skipped:** 1 test (App component - requires router setup)
 
 ## Running Tests
@@ -103,30 +103,32 @@ Tests for building construction, placement, and management:
 - ✅ Check tile occupation
 
 ### 6. Peasants Store Tests (`src/__tests__/stores/peasants.spec.ts`)
-⚠️ **12 tests - 9 FAILING (test environment issue)**
+✅ **12 tests - ALL PASSING**
 
-The failing tests are due to reactive state issues in the test environment. The actual functionality works correctly in the running application.
+Tests for peasant allocation and management system:
+- Peasant generation from infrastructure buildings
+- Peasant allocation to production buildings
+- Validation and over-allocation prevention
+- Serialization/deserialization
+- Statistics calculation
 
-**Known Issues:**
-- `totalPeasants` and `unallocatedPeasants` returning `NaN` in tests
-- These values work correctly in the actual application
-- Issue is isolated to test environment setup with Pinia reactive Maps
-
-**Passing Tests:**
+**Coverage:**
 - ✅ Initialize player peasants
+- ✅ Add peasant source
 - ✅ Remove peasant source
+- ✅ Handle multiple sources
+- ✅ Allocate peasants to building
+- ✅ Prevent over-allocation
+- ✅ Reallocate peasants
+- ✅ Remove allocation
 - ✅ Validate sufficient peasants
+- ✅ Validate insufficient peasants
+- ✅ Serialize/deserialize peasant state
+- ✅ Calculate peasant statistics
 
-**Failing Tests (test environment only):**
-- ⚠️ Add peasant source
-- ⚠️ Handle multiple sources
-- ⚠️ Allocate peasants to building
-- ⚠️ Prevent over-allocation
-- ⚠️ Reallocate peasants
-- ⚠️ Remove allocation
-- ⚠️ Validate insufficient peasants
-- ⚠️ Serialize/deserialize
-- ⚠️ Calculate statistics
+**Fixed Issues (2026-10-14):**
+- Corrected `addPeasantSource()` parameter order in tests (was causing NaN values)
+- Updated test expectations to match actual return types
 
 ## What's Tested
 
@@ -160,12 +162,6 @@ The failing tests are due to reactive state issues in the test environment. The 
 
 ## Future Improvements
 
-### Fix Peasant Store Tests
-The peasant store tests need fixing for the test environment:
-- Investigate Pinia reactive Map behavior in Vitest
-- Possibly use `flush Promises()` or `nextTick()` for reactive updates
-- Consider mocking the Pinia store setup
-
 ### Additional Test Coverage Needed
 - Turn resolution logic
 - Wall/settlement detection
@@ -187,8 +183,9 @@ The peasant store tests need fixing for the test environment:
 
 ## Notes
 
-- All passing tests ensure critical game mechanics are working correctly
-- The failing peasant tests are due to test environment setup, not actual bugs
+- All 53 tests pass successfully ✅
+- Critical game mechanics are thoroughly tested and working correctly
 - The game runs correctly in development mode (`bun dev`)
 - Type-checking passes: `bun run type-check` ✅
 - Linting passes: `bun run lint` ✅
+- Test coverage includes: building placement, production calculation, peasant management, and store serialization

@@ -7,11 +7,22 @@ import { ALL_BUILDINGS, BuildingCategory, type BuildingDefinition } from '@/data
 import BuildingCard from './BuildingCard.vue';
 import ConstructionQueue from './ConstructionQueue.vue';
 
+interface Props {
+  selectedBuilding?: BuildingDefinition | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  selectedBuilding: null,
+});
+
+const emit = defineEmits<{
+  (e: 'update:selectedBuilding', building: BuildingDefinition | null): void;
+}>();
+
 const { t } = useI18n();
 const turnStore = useTurnStore();
 const resourcesStore = useResourcesStore();
 
-const selectedBuilding = ref<BuildingDefinition | null>(null);
 const activeCategory = ref<BuildingCategory | 'ALL'>('ALL');
 
 const currentPlayerId = computed(() => turnStore.currentPlayerId);
@@ -46,17 +57,13 @@ function canAffordBuilding(building: BuildingDefinition): boolean {
 function selectBuilding(building: BuildingDefinition) {
   if (!canAffordBuilding(building)) return;
 
-  selectedBuilding.value = selectedBuilding.value?.id === building.id ? null : building;
-  // Emit event to parent to enter placement mode
-  if (selectedBuilding.value) {
+  const newSelection = props.selectedBuilding?.id === building.id ? null : building;
+  emit('update:selectedBuilding', newSelection);
+
+  if (newSelection) {
     console.log('Selected building for placement:', building.id);
-    // TODO: Enable placement mode in map
   }
 }
-
-defineExpose({
-  selectedBuilding,
-});
 </script>
 
 <template>
@@ -101,10 +108,11 @@ defineExpose({
       <!-- Selected Building Info -->
       <div
         v-if="selectedBuilding"
-        class="mt-4 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-300"
+        class="mt-4 rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300"
       >
         <p class="font-semibold">✓ {{ t(selectedBuilding.nameKey) }} selected</p>
-        <p class="mt-1 text-xs">Click on the map to place this building (costs 1 action + resources)</p>
+        <p class="mt-1 text-xs">Click on the map to place. Press ESC to cancel.</p>
+        <p class="mt-1 text-xs opacity-75">Selection stays active for multiple placements!</p>
       </div>
     </div>
   </div>

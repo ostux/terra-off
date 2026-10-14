@@ -156,9 +156,9 @@ function getBuildingIcon(buildingId: string): string {
     archery_range: '🏹',
     stable: '🐴',
     training_ground: '🎯',
-    wooden_wall: '🧱',
+    wood_wall: '🪵',
     stone_wall: '🧱',
-    wooden_gate: '🚪',
+    wood_gate: '🚪',
     stone_gate: '🚪',
   };
   return icons[buildingId] || '🏗️';

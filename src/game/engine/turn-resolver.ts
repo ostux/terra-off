@@ -8,7 +8,15 @@ import type {
   TurnResolutionResult,
   TurnEvent,
   PlayerAction,
+  VisionSource,
+  TileKey,
 } from '@/data/types';
+import { TurnEventType } from '@/data/types';
+import { VisionCalculator } from './vision-calculator';
+import { useBuildingsStore } from '@/stores/game/buildings';
+import { useExplorationStore } from '@/stores/game/exploration';
+import { useMapStore } from '@/stores/game/map';
+import { VISION_CONFIG } from '@/data/config';
 
 /**
  * Turn resolution context
@@ -25,6 +33,12 @@ export interface TurnResolutionContext {
  * Processes all turn-end events in correct order
  */
 export class TurnResolver {
+  private visionCalculator: VisionCalculator;
+
+  constructor() {
+    this.visionCalculator = new VisionCalculator();
+  }
+
   /**
    * Resolve turn for all players
    * Returns events that occurred during resolution
@@ -97,9 +111,39 @@ export class TurnResolver {
    */
   private async progressConstruction(
     context: TurnResolutionContext,
-    _events: TurnEvent[],
+    events: TurnEvent[],
   ): Promise<void> {
-    console.log('Progressing construction for turn', context.turnNumber);
+    console.log('🏗️ Progressing construction for turn', context.turnNumber);
+
+    const buildingsStore = useBuildingsStore();
+    const explorationStore = useExplorationStore();
+
+    // Progress all construction by one turn
+    const completedBuildings = buildingsStore.progressConstruction(context.turnNumber);
+
+    // For each completed building, recalculate fog immediately
+    for (const building of completedBuildings) {
+      console.log(
+        `✅ Building completed: ${building.buildingId} at (${building.coordinates.x}, ${building.coordinates.y})`,
+      );
+
+      // Immediately recalculate vision for the player who owns this building
+      await explorationStore.recalculateVisionNow(building.playerId);
+
+      // Add event for building completion
+      events.push({
+        type: TurnEventType.BUILDING_COMPLETED,
+        playerId: building.playerId,
+        turnNumber: context.turnNumber,
+        timestamp: new Date(),
+        buildingId: building.buildingId,
+        coordinates: building.coordinates,
+      });
+    }
+
+    if (completedBuildings.length > 0) {
+      console.log(`🎉 ${completedBuildings.length} building(s) completed this turn`);
+    }
   }
 
   /**
@@ -149,7 +193,47 @@ export class TurnResolver {
     context: TurnResolutionContext,
     _events: TurnEvent[],
   ): Promise<void> {
-    console.log('Recalculating vision for turn', context.turnNumber);
+    console.log('🔍 Recalculating vision for turn', context.turnNumber);
+
+    const buildingsStore = useBuildingsStore();
+    const buildingsModule = await import('@/data/buildings');
+    const ALL_BUILDINGS = buildingsModule.ALL_BUILDINGS;
+    type BuildingDefinition = (typeof ALL_BUILDINGS)[number];
+
+    // Get all players (for now, just the current player)
+    // TODO: In multiplayer, iterate through all players
+    const players = [context.currentPlayerId];
+
+    for (const playerId of players) {
+      // Collect vision sources from completed buildings
+      const visionSources: VisionSource[] = [];
+      const playerBuildings = buildingsStore.getPlayerBuildings(playerId);
+
+      for (const building of playerBuildings) {
+        // Get building definition to access vision radius
+        const buildingDef = ALL_BUILDINGS.find((b: BuildingDefinition) => b.id === building.buildingId);
+        if (!buildingDef) continue;
+
+        const visionSource = this.visionCalculator.createBuildingVisionSource(
+          building.entityId,
+          building.coordinates,
+          buildingDef.visionRadius || VISION_CONFIG.DEFAULT_VISION_RADIUS,
+          playerId,
+        );
+        visionSources.push(visionSource);
+      }
+
+      // Calculate vision
+      const visionResult = this.visionCalculator.calculateVision(playerId, visionSources);
+
+      console.log(
+        `👁️ Player ${playerId}: ${visionResult.visibleTiles.size} visible tiles, ${visionResult.newlyVisible.length} newly revealed`,
+      );
+
+      // Store the vision result for fog update step
+      (context as any).visionResults = (context as any).visionResults || new Map();
+      (context as any).visionResults.set(playerId, visionResult);
+    }
   }
 
   /**
@@ -159,7 +243,53 @@ export class TurnResolver {
     context: TurnResolutionContext,
     _events: TurnEvent[],
   ): Promise<void> {
-    console.log('Updating fog of war for turn', context.turnNumber);
+    console.log('🌫️ Updating fog of war for turn', context.turnNumber);
+
+    const explorationStore = useExplorationStore();
+    const mapStore = useMapStore();
+    const fogManager = explorationStore.getFogManager();
+
+    // Get vision results from previous step
+    const visionResults = (context as any).visionResults as Map<PlayerId, any>;
+    if (!visionResults) {
+      console.warn('⚠️ No vision results available for fog update');
+      return;
+    }
+
+    for (const [playerId, visionResult] of visionResults.entries()) {
+      // Get previous vision state (cached in vision calculator)
+      const previouslyVisible = this.visionCalculator.getVisibleTiles(playerId);
+
+      // Get all current tiles for snapshot saving
+      const currentTiles = new Map();
+      for (const tileKey of visionResult.visibleTiles) {
+        const tile = mapStore.getTileByKey(tileKey);
+        if (tile) {
+          currentTiles.set(tileKey, tile);
+        }
+      }
+      for (const tileKey of previouslyVisible) {
+        if (!currentTiles.has(tileKey)) {
+          const tile = mapStore.getTileByKey(tileKey);
+          if (tile) {
+            currentTiles.set(tileKey, tile);
+          }
+        }
+      }
+
+      // Update fog of war (reveals new tiles, covers old ones, saves snapshots)
+      const fogUpdate = fogManager.updateFog(
+        playerId,
+        visionResult.visibleTiles,
+        previouslyVisible,
+        currentTiles,
+        context.turnNumber,
+      );
+
+      console.log(
+        `🌫️ Player ${playerId}: Revealed ${fogUpdate.revealed.length} tiles, covered ${fogUpdate.covered.length} tiles`,
+      );
+    }
   }
 
   /**
@@ -169,7 +299,41 @@ export class TurnResolver {
     context: TurnResolutionContext,
     _events: TurnEvent[],
   ): Promise<void> {
-    console.log('Generating new tiles for turn', context.turnNumber);
+    console.log('🗺️ Generating new tiles for turn', context.turnNumber);
+
+    const mapStore = useMapStore();
+
+    // Get vision results from previous step
+    const visionResults = (context as any).visionResults as Map<PlayerId, any>;
+    if (!visionResults) {
+      console.warn('⚠️ No vision results available for tile generation');
+      return;
+    }
+
+    // Collect all tiles that need to be generated (from all players)
+    const tilesToGenerate = new Set<TileKey>();
+
+    for (const [_playerId, visionResult] of visionResults.entries()) {
+      for (const tileKey of visionResult.tilesRequiringGeneration) {
+        tilesToGenerate.add(tileKey);
+      }
+    }
+
+    // Generate tiles that don't exist yet
+    const tilesNeedingGeneration: TileKey[] = [];
+    for (const tileKey of tilesToGenerate) {
+      const existingTile = mapStore.getTileByKey(tileKey);
+      if (!existingTile) {
+        tilesNeedingGeneration.push(tileKey);
+      }
+    }
+
+    if (tilesNeedingGeneration.length > 0) {
+      mapStore.ensureTilesExist(tilesNeedingGeneration);
+      console.log(
+        `🗺️ Generated ${tilesNeedingGeneration.length} new tiles (${tilesToGenerate.size} total tiles required)`,
+      );
+    }
   }
 
   /**

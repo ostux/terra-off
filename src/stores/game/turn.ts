@@ -212,12 +212,14 @@ export const useTurnStore = defineStore('turn', () => {
     const { useResourcesStore } = await import('@/stores/game/resources');
     const { useBuildingsStore } = await import('@/stores/game/buildings');
     const { usePeasantsStore } = await import('@/stores/game/peasants');
+    const { useExplorationStore } = await import('@/stores/game/exploration');
     const { calculatePlayerProduction } = await import('@/game/engine/production-integrator');
     const { getBuildingById } = await import('@/data/buildings');
 
     const resourceStore = useResourcesStore();
     const buildingsStore = useBuildingsStore();
     const peasantsStore = usePeasantsStore();
+    const explorationStore = useExplorationStore();
 
     // Process turn resolution
     // 1. Calculate and update production from buildings
@@ -262,6 +264,20 @@ export const useTurnStore = defineStore('turn', () => {
           buildingDef.peasantGeneration
         );
       }
+    }
+
+    // 5. Recalculate fog for buildings that just completed
+    if (completedBuildings.length > 0) {
+      console.log(`🎉 ${completedBuildings.length} building(s) completed this turn:`);
+      for (const building of completedBuildings) {
+        console.log(`   - ${building.buildingId} at (${building.coordinates.x}, ${building.coordinates.y})`);
+      }
+      console.log('🔍 Recalculating fog of war...');
+
+      // Recalculate vision for the current player
+      await explorationStore.recalculateVisionNow(currentPlayerId.value);
+
+      console.log('✅ Fog recalculation complete');
     }
 
     // After a brief delay (for UI feedback), advance to next player
