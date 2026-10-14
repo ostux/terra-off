@@ -1,5 +1,214 @@
 {
   "message": {
     "hello": "hello world"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "ok": "OK",
+    "close": "Close"
+  },
+  "game": {
+    "title": "Terra-Off",
+    "subtitle": "Turn-Based Strategy Game",
+    "version": "Version {version}",
+    "mapPlaceholder": "Map will render here"
+  },
+  "map": {
+    "controls": {
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "resetView": "Reset View",
+      "grid": "Grid",
+      "settlements": "Settlements"
+    },
+    "info": {
+      "title": "Map Info",
+      "camera": "Camera",
+      "zoom": "Zoom",
+      "tiles": "Tiles Loaded"
+    },
+    "help": {
+      "title": "Controls",
+      "pan": "Drag to pan",
+      "zoom": "Scroll to zoom",
+      "click": "Click tile for info"
+    }
+  },
+  "settlement": {
+    "area": "Area",
+    "buildings": "Buildings",
+    "population": "Population",
+    "village": "Village",
+    "city": "City"
+  },
+  "menu": {
+    "newGame": "New Game",
+    "loadGame": "Load Game",
+    "settings": "Settings"
+  },
+  "turn": {
+    "number": "Turn {turn}",
+    "endTurn": "End Turn",
+    "actions": "{current} / {max} Actions",
+    "actionsRemaining": "{count} action remaining | {count} actions remaining",
+    "confirm": {
+      "endTurnWithActions": "You have {count} action remaining. End turn anyway? | You have {count} actions remaining. End turn anyway?",
+      "returnToMenu": "Return to main menu? Your game is auto-saved.",
+      "cancelConstruction": "Cancel construction?\n\nYou will receive 50% refund of the cost."
+    },
+    "history": {
+      "title": "Turn Actions",
+      "noActions": "No actions taken this turn",
+      "actionCost": "AP"
+    },
+    "timer": {
+      "timeRemaining": "Time Remaining"
+    }
+  },
+  "peasants": {
+    "title": "Peasants",
+    "total": "Total",
+    "allocated": "Allocated",
+    "unallocated": "Unallocated",
+    "idle": "Idle peasants",
+    "allAssigned": "All assigned",
+    "utilizationRate": "Utilization Rate",
+    "averageEfficiency": "Average Efficiency",
+    "suboptimalAllocations": "Suboptimal Allocations",
+    "sources": "Peasant Sources",
+    "allocator": {
+      "title": "Allocate Peasants",
+      "currentlyAllocated": "Currently Allocated",
+      "available": "Available",
+      "toAllocate": "Peasants to Allocate",
+      "efficiency": "Production Efficiency",
+      "requiredForOptimal": "Required for 100%",
+      "productionMultiplier": "Production Multiplier",
+      "warning": {
+        "needMinimum": "Need at least {count} peasants for production",
+        "cappedAt500": "Efficiency capped at 500%",
+        "suboptimal": "Suboptimal allocation"
+      },
+      "apply": "Apply",
+      "cancel": "Cancel"
+    }
+  },
+  "resource": {
+    "food": {
+      "name": "Food",
+      "description": "Used to feed your peasants and military units"
+    },
+    "wood": {
+      "name": "Wood",
+      "description": "Used for constructing buildings and training units"
+    },
+    "stone": {
+      "name": "Stone",
+      "description": "Used for advanced buildings and fortifications"
+    },
+    "iron": {
+      "name": "Iron",
+      "description": "Used for training elite military units and advanced technologies"
+    }
+  },
+  "building": {
+    "demolish": "Demolish",
+    "queue": {
+      "title": "Construction Queue",
+      "count": "{count} building | {count} buildings",
+      "empty": "No buildings under construction",
+      "cancel": "Cancel",
+      "cancelTitle": "Cancel construction (50% refund)",
+      "progress": "Progress",
+      "turnsRemaining": "{count} turn remaining | {count} turns remaining",
+      "completesNextTurn": "Completes next turn!"
+    },
+    "tent": {
+      "name": "Tent",
+      "description": "Basic shelter. Provides housing for 3 peasants."
+    },
+    "hut": {
+      "name": "Hut",
+      "description": "Simple dwelling. Provides housing for 8 peasants."
+    },
+    "house": {
+      "name": "House",
+      "description": "Sturdy home. Provides housing for 20 peasants."
+    },
+    "farm": {
+      "name": "Farm",
+      "description": "Produces food. Requires 6 peasants for 100% efficiency. Produces 10 food per turn at full capacity."
+    },
+    "lumber_mill": {
+      "name": "Lumber Mill",
+      "description": "Produces wood. Requires 6 peasants for 100% efficiency. Produces 8 wood per turn at full capacity."
+    },
+    "quarry": {
+      "name": "Quarry",
+      "description": "Produces stone. Requires 8 peasants for 100% efficiency. Produces 6 stone per turn at full capacity."
+    },
+    "mine": {
+      "name": "Mine",
+      "description": "Produces iron. Requires 10 peasants for 100% efficiency. Produces 4 iron per turn at full capacity."
+    },
+    "barracks": {
+      "name": "Barracks",
+      "description": "Trains infantry units. Can hold 15 soldiers (including cavalry). Provides vision of 3 tiles."
+    },
+    "archery_range": {
+      "name": "Archery Range",
+      "description": "Trains archers. Can hold 12 foot soldiers only (no cavalry). Provides vision of 4 tiles."
+    },
+    "stable": {
+      "name": "Stable",
+      "description": "Trains cavalry units. Can hold 8 soldiers (including cavalry). Provides vision of 3 tiles."
+    },
+    "training_ground": {
+      "name": "Training Ground",
+      "description": "Trains scouts for exploration. Can hold 10 foot soldiers only (no cavalry). Provides vision of 5 tiles."
+    },
+    "wood_wall": {
+      "name": "Wood Wall",
+      "description": "Defensive wall segment. Forms a village when connected in a closed loop with gates. Can hold 10 foot soldiers (no cavalry). Provides vision of 3 tiles."
+    },
+    "stone_wall": {
+      "name": "Stone Wall",
+      "description": "Strong defensive wall segment. Forms a city when connected in a closed loop with gates. Can hold 20 foot soldiers (no cavalry). Provides vision of 4 tiles."
+    },
+    "wood_gate": {
+      "name": "Wood Gate",
+      "description": "Entrance in wood walls. Required for village formation. Cannot station soldiers. Provides vision of 3 tiles."
+    },
+    "stone_gate": {
+      "name": "Stone Gate",
+      "description": "Reinforced entrance in stone walls. Required for city formation. Cannot station soldiers. Provides vision of 4 tiles."
+    }
+  },
+  "unit": {
+    "warrior": {
+      "name": "Warrior",
+      "description": "Versatile infantry unit. Balanced attack (10) and defense (8). Moves 3 tiles per turn. Costs 2 food upkeep per turn."
+    },
+    "spearman": {
+      "name": "Spearman",
+      "description": "Defensive infantry unit. Strong against cavalry. High defense (10), moderate attack (8). Moves 3 tiles per turn. Costs 2 food upkeep per turn."
+    },
+    "swordsman": {
+      "name": "Swordsman",
+      "description": "Elite heavy infantry. High attack (12), good defense (9). Requires iron. Moves 2 tiles per turn. Costs 3 food upkeep per turn."
+    },
+    "archer": {
+      "name": "Archer",
+      "description": "Ranged unit. Gets bonus when stationed on walls. Moderate attack (9), low defense (5). Better vision (4 tiles). Costs 2 food upkeep per turn."
+    },
+    "horseman": {
+      "name": "Horseman",
+      "description": "Fast cavalry unit. CANNOT be stationed on walls. High mobility (5 tiles per turn), strong attack (11). Costs 4 food upkeep per turn."
+    },
+    "scout": {
+      "name": "Scout",
+      "description": "Exploration unit. Excellent vision (6 tiles) for revealing the map. Very fast (6 tiles per turn), weak in combat. Costs 1 food upkeep per turn."
+    }
   }
 }

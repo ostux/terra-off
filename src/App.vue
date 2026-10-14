@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n();
+import { RouterView } from 'vue-router';
+import NotificationContainer from '@/components/ui/NotificationContainer.vue';
 </script>
 
 <template>
-  <h2 class="text-3xl font-bold underline">{{ t('message.hello') }}</h2>
+  <RouterView />
+  <NotificationContainer />
 </template>
-
-<style scoped></style>

@@ -18,6 +18,63 @@ Vue 3 application using the latest release candidate with Vite, TypeScript, Pini
 - **TypeScript required**: All code must be written in TypeScript
 - **Type-check before completion**: `bun run type-check` MUST pass before any task is considered complete
 - **Use Bun exclusively**: Always use `bun` commands, NEVER use `npm`
+- **No hard-coded values**: ALL game constants, numbers, and configuration values MUST be in config files, NEVER hard-coded in components or logic
+
+### User Notifications (CRITICAL)
+- **NEVER use alert()**: The JavaScript `alert()` function is FORBIDDEN. Always use the notification system instead
+- **NEVER use confirm()**: The JavaScript `confirm()` function is FORBIDDEN. Use the notification confirm method instead
+- **NEVER use prompt()**: The JavaScript `prompt()` function is FORBIDDEN. Create proper UI components for user input
+- **Use notification system**: Import and use `useNotification()` composable for all user notifications
+- **Notification types available**:
+  - `info(message, duration?)` - Blue notification for informational messages
+  - `success(message, duration?)` - Green notification for successful operations
+  - `warning(message, duration?)` - Orange notification for warnings
+  - `error(message, duration?)` - Red notification for errors (stays longer by default)
+  - `confirm(message, onConfirm, onCancel?, options?)` - Confirmation dialog with Cancel/Confirm actions
+- **Notification location**: All notifications appear in bottom-right corner with smooth animations
+- **Auto-dismiss**: Notifications auto-dismiss after duration (default 5s for info/success/warning, 8s for errors)
+- **Usage pattern:**
+  ```vue
+  <script setup lang="ts">
+  import { useNotification } from '@/composables/useNotification';
+
+  const { error, success, confirm } = useNotification();
+
+  function handleAction() {
+    if (someConditionFails) {
+      error('Operation failed: Insufficient resources');
+      return;
+    }
+    success('Building constructed successfully!');
+  }
+
+  function handleDelete() {
+    confirm(
+      'Are you sure you want to delete this building?\n\nYou will get 25% refund.',
+      () => {
+        // User confirmed - execute delete
+        performDelete();
+      },
+      () => {
+        // User cancelled - optional callback
+      },
+      {
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+        type: useNotification().NotificationType.ERROR,
+      }
+    );
+  }
+  </script>
+  ```
+
+### UI Design (CRITICAL)
+- **Mobile-first approach**: ALL UI components MUST be designed for mobile devices first, then enhanced for desktop
+- **Touch-friendly**: All interactive elements must be sized appropriately for touch (minimum 44x44px tap targets)
+- **Responsive breakpoints**: Use Tailwind responsive prefixes (sm:, md:, lg:, xl:) to enhance for larger screens
+- **Turn-based UI optimization**: Game is turn-based (not real-time), UI should emphasize clarity over speed
+- **Vertical layout priority**: Default layouts should be vertical-friendly for mobile portrait orientation
+- **No hover-only interactions**: Never rely solely on hover states; always provide touch alternatives
 
 ### Localization
 - **vue-i18n for translations**: The application uses vue-i18n for internationalization
@@ -32,6 +89,17 @@ Vue 3 application using the latest release candidate with Vite, TypeScript, Pini
 - **Plan must contain TODO list**: Every plan file MUST contain a TODO list with checkboxes
 - **Update plan during execution**: When executing a plan, the markdown file TODO list MUST be updated to track progress
 - **Enable continuation**: Plan files allow continuing work from where it was left off in subsequent sessions
+
+### Game Mechanics (Turn-Based Strategy)
+- **Action System**: Each player has X actions per turn (default: 5, fully configurable in `src/data/config.ts`)
+- **Action Upgrades**: Research and building upgrades (e.g., main building upgrade) can increase max actions per turn
+- **Save/Load System**:
+  - Game state MUST be saved to localStorage
+  - Game MUST be immune to window refresh (F5)
+  - Auto-save after EACH action taken by player
+  - Auto-save at turn end
+  - Game state should restore automatically on page load
+- **Configuration-Driven**: All game values (action counts, resource amounts, costs, bonuses, etc.) MUST be defined in config files
 
 ## Development Commands
 
